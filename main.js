@@ -1,6 +1,17 @@
-let inputNumberOne;
-let operator;
-let inputNumberTwo;
+const buttons = Array.from(document.querySelectorAll(".button"));
+let display = document.getElementById("display");
+
+buttons.map(button => {
+  button.addEventListener('click', (e) => {
+    switch(e.target.innerText) {
+      default:
+        display.innerHTML += e.target.innerText;
+        break;
+      case 'C':
+        display.innerHTML = '';
+    }
+  })
+})
 
 const add = () => a + b;
 
@@ -36,5 +47,3 @@ function operate() {
       break;
   }
 }
-
-operate();
