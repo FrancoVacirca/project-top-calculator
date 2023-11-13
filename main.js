@@ -1,68 +1,104 @@
-const buttons = Array.from(document.querySelectorAll(".button"));
-let display = document.getElementById("display");
-let displayValue = [];
+document.addEventListener("DOMContentLoaded", function () {
+  // Variables to store references and data
+  const buttons = Array.from(document.querySelectorAll(".button"));
+  let display = document.getElementById("display");
+  let displayValue = "";
 
-buttons.forEach((button) => {
-  button.addEventListener("click", (e) => {
-    switch (e.target.innerText) {
-      default:
-        display.innerHTML += e.target.innerText;
-        displayValue.push(e.target.innerText);
+  // Add click event listeners to buttons
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => handleButtonClick(button.innerText));
+  });
+
+  // Function to handle button clicks
+  function handleButtonClick(value) {
+    switch (value) {
+      case "=":
+        calculateResult();
         break;
       case "C":
-        display.innerHTML = "";
-        displayValue = [];
-        break;
-      case "=":
-        operate();
-        break;
-    }
-  });
-});
-
-function operate() {
-  // Join the displayValue array to form an expression
-  const expression = displayValue.join('');
-
-  // Use regular expressions to split the expression into operands and operator
-  const regex = /(\d+)([+\-*/])(\d+)/;
-  const match = expression.match(regex);
-
-  if (match) {
-    const operand1 = parseFloat(match[1]);
-    const operator = match[2];
-    const operand2 = parseFloat(match[3]);
-
-    let result;
-
-    // Perform the calculation based on the operator
-    switch (operator) {
-      case '+':
-        result = operand1 + operand2;
-        break;
-      case '-':
-        result = operand1 - operand2;
-        break;
-      case '*':
-        result = operand1 * operand2;
-        break;
-      case '/':
-        if (operand2 !== 0) {
-          result = operand1 / operand2;
-        } else {
-          result = "Error: Division by zero";
-        }
+        clearDisplay();
         break;
       default:
-        result = "Error: Invalid operator";
+        appendToDisplay(value);
+        break;
+    }
+  }
+
+  // Function to add value to the display
+  function appendToDisplay(value) {
+    displayValue += value;
+    updateDisplay();
+  }
+
+  // Function to clear the display
+  function clearDisplay() {
+    displayValue = "";
+    updateDisplay();
+  }
+
+  // Function to calculate and display the result
+  function calculateResult() {
+    try {
+      let result = evaluateExpression(displayValue);
+      display.innerHTML = result;
+      displayValue = result.toString();
+    } catch (error) {
+      handleCalculationError();
+    }
+  }
+
+  // Function to evaluate the expression
+  function evaluateExpression(expression) {
+    const numbers = [];
+    const operators = [];
+
+    // Split expression into numbers and operators
+    expression.split(/([+\-*/])/).forEach((token) => {
+      token = token.trim();
+      if (!token) return;
+
+      if (token.match(/[+\-*/]/)) {
+        operators.push(token);
+      } else {
+        numbers.push(parseFloat(token));
+      }
+    });
+
+    // Perform calculations
+    while (operators.length > 0) {
+      const operator = operators.shift();
+      const nextNumber = numbers.shift();
+
+      switch (operator) {
+        case '+':
+          numbers[0] += nextNumber;
+          break;
+        case '-':
+          numbers[0] -= nextNumber;
+          break;
+        case '*':
+          numbers[0] *= nextNumber;
+          break;
+        case '/':
+          if (nextNumber === 0) {
+            throw new Error("Error: Division by zero");
+          }
+          numbers[0] /= nextNumber;
+          break;
+      }
     }
 
-    // Display the result
-    display.innerHTML = result;
-
-    // Clear the displayValue array and add the result as the new starting value
-    displayValue = [result.toString()];
+    return numbers[0];
   }
-}
 
+  // Function to handle calculation errors
+  function handleCalculationError() {
+    display.innerHTML = "Error";
+    displayValue = "";
+  }
 
+  // Function to update the display with the current value
+  function updateDisplay() {
+    display.innerHTML = displayValue;
+  }
+});
